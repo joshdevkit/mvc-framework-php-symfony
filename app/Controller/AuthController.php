@@ -102,7 +102,7 @@ class AuthController extends Controller
         $users = Auth::get('user');
 
         UserRole::create([
-            'role_id' => 1,
+            'role_id' => 2,
             'user_id' => $users->id
         ]);
 

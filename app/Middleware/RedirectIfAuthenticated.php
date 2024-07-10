@@ -11,7 +11,7 @@ class RedirectIfAuthenticated extends Middleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && ($request->getPathInfo() === '/login' || $request->getPathInfo() === '/register')) {
+        if (Auth::check()) {
             $roles = Auth::get('role');
             if (in_array('admin', $roles)) {
                 return redirect('/admin/dashboard');

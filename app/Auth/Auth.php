@@ -19,7 +19,7 @@ class Auth
         }
 
         if (is_object($value)) {
-            $value = serialize($value);
+            $value = $value;
         }
 
         $_SESSION[$key] = $value;
@@ -30,9 +30,9 @@ class Auth
         self::start();
         if (isset($_SESSION[$key])) {
             $value = $_SESSION[$key];
-            if (self::isSerialized($value)) {
-                return unserialize($value);
-            }
+
+            return $value;
+
             return $value;
         }
         return $default;
@@ -56,10 +56,5 @@ class Auth
     {
         self::start();
         return isset($_SESSION['user']);
-    }
-
-    private static function isSerialized($data)
-    {
-        return ($data === 'b:0;' || @unserialize($data) !== false);
     }
 }
