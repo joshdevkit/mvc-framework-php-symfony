@@ -7,7 +7,7 @@ use App\Database\Eloquent\Model;
 class UserInfo extends Model
 {
     protected $table = 'user_info';
-
+    protected $primaryKey = 'id';
     protected $fillable = [
         'user_id',
         'contact',

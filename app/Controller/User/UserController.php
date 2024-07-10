@@ -18,10 +18,11 @@ class UserController extends Controller
    public function profile()
    {
       $userID = Auth::get('user')->id;
+      // $user = User::with('info')->findOrFail($userID);
       $user = User::with('info')->findOrFail($userID);
       $title = "Profile Page";
       return view('user.profile', compact('user', 'title'));
-      // dd($user);
+      dd($user);
    }
 
    public function show(Request $request, $slug)

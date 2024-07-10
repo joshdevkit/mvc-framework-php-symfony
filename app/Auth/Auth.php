@@ -17,6 +17,11 @@ class Auth
         if (is_object($value) && property_exists($value, 'password')) {
             unset($value->password);
         }
+
+        if (is_object($value)) {
+            $value = serialize($value);
+        }
+
         $_SESSION[$key] = $value;
     }
 
@@ -25,7 +30,10 @@ class Auth
         self::start();
         if (isset($_SESSION[$key])) {
             $value = $_SESSION[$key];
-            return $value !== false ? $value : $default;
+            if (self::isSerialized($value)) {
+                return unserialize($value);
+            }
+            return $value;
         }
         return $default;
     }
@@ -48,5 +56,10 @@ class Auth
     {
         self::start();
         return isset($_SESSION['user']);
+    }
+
+    private static function isSerialized($data)
+    {
+        return ($data === 'b:0;' || @unserialize($data) !== false);
     }
 }

@@ -5,5 +5,6 @@
         <p>Tech Used: <?= $content['tech'] ?></p>
         <p></p>
         <a href="/" class="btn btn-primary">Get Started</a>
+
     </div>
 </div>

@@ -8,6 +8,7 @@ use PDO;
 use Exception;
 use App\Database\Eloquent\Relations\HasMany;
 use App\Database\Eloquent\Relations\HasOne;
+use App\Database\Eloquent\Relations\BelongsToMany;
 use App\Exceptions\SqlExecutionException;
 
 abstract class Model
@@ -199,6 +200,11 @@ abstract class Model
         return new BelongsTo($related, $foreignKey, $ownerKey, $this->getPDO());
     }
 
+    public function belongsToMany($related, $foreignKey, $ownerKey = 'id', $pivotTable)
+    {
+        return new BelongsToMany($this, $related, $foreignKey, $ownerKey, $pivotTable);
+    }
+
     public static function with($relations)
     {
         if (is_string($relations)) {
@@ -245,22 +251,45 @@ abstract class Model
             throw new SqlExecutionException(implode('<br>', $errorMessages));
         }
 
-        $columns = implode(', ', array_map(function ($column) {
-            return "$column = ?";
-        }, array_keys($fillableAttributes)));
+        $columns = [];
+        $paramValues = [];
 
-        $where = '';
-
-        if (!empty($conditions)) {
-            $where = 'WHERE ';
-            $where .= implode(' AND ', array_map(function ($key) {
-                return "$key = ?";
-            }, array_keys($conditions)));
+        foreach ($attributes as $column => $value) {
+            $columns[] = "{$column} = ?";
+            $paramValues[] = $value;
         }
 
-        $sql = "UPDATE {$this->table} SET {$columns} {$where}";
-        $values = array_merge(array_values($fillableAttributes), array_values($conditions));
+        $parsedConditions = [];
+        foreach ($conditions as $column => $value) {
+            $parsedConditions[] = "{$column} = ?";
+            $paramValues[] = $value;
+        }
+
+        $columns = implode(', ', $columns);
+        $whereClause = implode(' AND ', $parsedConditions);
+
+        $sql = "UPDATE {$this->table} SET {$columns}";
+
+        if (!empty($whereClause)) {
+            $sql .= " WHERE {$whereClause}";
+        }
+
         $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute($values);
+        $stmt->execute($paramValues);
+        return $stmt->rowCount();
+    }
+
+    public static function destroy($id)
+    {
+        $model = new static(Database::conn());
+        return $model->delete($id);
+    }
+
+    protected function delete($id)
+    {
+        $sql = "DELETE FROM {$this->table} WHERE {$this->primaryKey} = ?";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$id]);
+        return $stmt->rowCount();
     }
 }

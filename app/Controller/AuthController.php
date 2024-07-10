@@ -33,10 +33,25 @@ class AuthController extends Controller
             return view('auth.login', ['errors' => $errors, 'input' => $input, 'title' => 'Login Page']);
         }
 
-        $user = User::find('email', $input['email']);
-        if ($user && password_verify($input['password'], $user->password)) {
+        $user = User::find('email', $request->input('email'));
+
+        if ($user && password_verify($request->input('password'), $user->password)) {
+            $userRole = User::with('roles')->findOrFail($user->id);
             Auth::set('user', $user);
-            return redirect('/');
+            $roles = $userRole->roles;
+            $roleNames = [];
+
+            foreach ($roles as $role) {
+                $roleNames[] = $role->role_name;
+            }
+            Auth::set('role', $roleNames);
+            if (in_array('admin', $roleNames)) {
+                header('Location: /admin/dashboard');
+                exit;
+            } else {
+                header('Location: /');
+                exit;
+            }
         } else {
             $validator->addError('email', 'These credentials do not match our records.');
             $errors = $validator->errors();
