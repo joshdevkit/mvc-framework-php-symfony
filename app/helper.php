@@ -77,9 +77,3 @@ if (!function_exists('storeAs')) {
         }
     }
 }
-
-if (!function_exists('extend')) {
-    function extend(string $view, array $data = [])
-    {
-    }
-}

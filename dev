@@ -66,13 +66,21 @@ function handleMakeModelCommand($modelName)
     echo "Creating model: {$modelName}.\n";
 }
 
-function handleMakeMigrationCommand($migrationName)
+function handleMakeMigrationCommand($command)
 {
-    // Convert migration name to lowercase
+    // Extract the table name from the command
+    preg_match('/create_(\w+)_table/', $command, $matches);
+
+    if (count($matches) < 2) {
+        echo "Invalid command format. Use: php dev make:migration create_table_name_table\n";
+        return;
+    }
+
+    $migrationName = $matches[1];
     $migrationNameLower = strtolower($migrationName);
 
     $timestamp = date('Y_m_d_His');
-    $fileName = $timestamp . '_create_' . $migrationNameLower . '.php';
+    $fileName = $timestamp . '_create_' . $migrationNameLower . '_table.php';
     $path = __DIR__ . '/App/Database/migrations/' . $fileName;
 
     $content = <<<PHP
@@ -82,7 +90,7 @@ function handleMakeMigrationCommand($migrationName)
     use App\Schema\Blueprint;
     use App\Support\Facades\Schema;
 
-    class create_{$migrationName} extends Migration
+    class create_{$migrationNameLower}_table extends Migration
     {
         /**
          * Run the migrations.
@@ -118,7 +126,6 @@ function handleMakeMigrationCommand($migrationName)
         echo "Failed to create migration: {$fileName}\n";
     }
 }
-
 
 function handleMigrateCommand()
 {
