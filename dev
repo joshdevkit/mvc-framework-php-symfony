@@ -1,0 +1,170 @@
+<?php
+
+use App\Database\Migration\Migration;
+
+if (php_sapi_name() !== 'cli') {
+    exit('This script must be run from the command line.');
+}
+
+require __DIR__ . '/functions.php';
+
+function handleCommand($command, $params)
+{
+    switch ($command) {
+        case 'make:controller':
+            handleMakeControllerCommand($params);
+            break;
+        case 'make:model':
+            handleMakeModelCommand($params);
+            break;
+        case 'make:migration':
+            handleMakeMigrationCommand($params);
+            break;
+        case 'start':
+            handleRunServer();
+            break;
+        case 'migrate':
+            handleMigrateCommand();
+            break;
+        default:
+            echo "Command '{$command}' not recognized.\n";
+    }
+}
+
+function handleRunServer()
+{
+    $docRoot = __DIR__ . '/public';
+    $address = 'localhost';
+    $port = 8000;
+
+    chdir($docRoot);
+
+    echo "Starting PHP built-in server at http://{$address}:{$port}...\n";
+    exec("php -S {$address}:{$port}");
+}
+
+function handleMakeControllerCommand($details)
+{
+    $parts = explode('/', $details);
+
+    if (count($parts) !== 2) {
+        echo "Invalid controller details format. Use 'Folder/ControllerName'.\n";
+        return;
+    }
+
+    $controllerPath = $parts[0];
+    $controllerName = $parts[1];
+
+    makeController($controllerPath, $controllerName);
+
+    echo "Creating controller: {$controllerName} in {$controllerPath}.\n";
+}
+
+function handleMakeModelCommand($modelName)
+{
+    makeModel($modelName);
+    echo "Creating model: {$modelName}.\n";
+}
+
+function handleMakeMigrationCommand($migrationName)
+{
+    // Convert migration name to lowercase
+    $migrationNameLower = strtolower($migrationName);
+
+    $timestamp = date('Y_m_d_His');
+    $fileName = $timestamp . '_create_' . $migrationNameLower . '.php';
+    $path = __DIR__ . '/App/Database/migrations/' . $fileName;
+
+    $content = <<<PHP
+    <?php
+
+    use App\Database\Migration\Migration;
+    use App\Schema\Blueprint;
+    use App\Support\Facades\Schema;
+
+    class create_{$migrationName} extends Migration
+    {
+        /**
+         * Run the migrations.
+         *
+         * @return void
+         */
+        public function up()
+        {
+            Schema::create('{$migrationNameLower}', function (Blueprint \$table) {
+                \$table->id();
+                // Define your table columns here
+                \$table->timestamps();
+            });
+        }
+
+        /**
+         * Reverse the migrations.
+         *
+         * @return void
+         */
+        public function down()
+        {
+            Schema::dropIfExists('{$migrationNameLower}');
+        }
+    }
+
+    PHP;
+
+    // Write content to the migration file
+    if (file_put_contents($path, $content) !== false) {
+        echo "Migration created successfully: {$fileName}\n";
+    } else {
+        echo "Failed to create migration: {$fileName}\n";
+    }
+}
+
+
+function handleMigrateCommand()
+{
+    require_once 'vendor/autoload.php'; // Ensure Composer autoloader is loaded
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+    $dotenv->load();
+
+    $host = $_ENV['DB_HOST'];
+    $dbname = $_ENV['DB_NAME'];
+    $username = $_ENV['DB_USER'];
+    $password = $_ENV['DB_PASS'];
+
+    try {
+        $pdo = new PDO("mysql:host={$host};dbname={$dbname}", $username, $password);
+        \App\Support\Facades\Schema::setPDO($pdo);
+
+        // Get migration files
+        $migrationPath = __DIR__ . '/app/Database/migrations';
+        $files = glob("{$migrationPath}/*.php");
+
+        foreach ($files as $file) {
+            require_once $file; // Ensure each migration file is required
+
+            // Extract the class name without extension and remove the date and time prefix
+            $filename = pathinfo($file, PATHINFO_FILENAME);
+            $migrationClass = preg_replace('/^[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{6}_([a-zA-Z0-9_]+)$/', '$1', $filename);
+
+            $migration = new $migrationClass($pdo);
+
+            if ($migration instanceof \App\Database\Migration\MigrationInterface) {
+                $migration->up();
+                echo "Migrated: {$migrationClass}\n";
+            } else {
+                echo "Invalid migration class: {$migrationClass}. Skipping.\n";
+            }
+        }
+
+        echo "All migrations completed.\n";
+    } catch (PDOException $e) {
+        die("Database connection failed: " . $e->getMessage());
+    }
+}
+
+
+
+$command = $argv[1];
+$params = $argv[2] ?? null;
+
+handleCommand($command, $params);
