@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Util\Hash;
 use App\Util\Validator;
 use App\Auth\Auth;
+use App\Models\UserRole;
 
 class AuthController extends Controller
 {
@@ -68,6 +69,7 @@ class AuthController extends Controller
 
     public function create(Request $request)
     {
+        $title = 'Register Page';
         $fullname = $request->input('fullname');
         $email = $request->input('email');
         $password = $request->input('password');
@@ -88,7 +90,7 @@ class AuthController extends Controller
             'confirm_password' => $confirm_password
         ], $rules)) {
             $errors = $validator->errors();
-            return view('auth.register', ['errors' => $errors, 'input' => compact('fullname', 'email', 'password', 'confirm_password'), 'title' => 'Register Page']);
+            return view('auth.register', ['errors' => $errors, 'input' => compact('fullname', 'email', 'password', 'confirm_password', 'title')]);
         }
 
         $user = User::create([
@@ -96,11 +98,21 @@ class AuthController extends Controller
             'email' => $email,
             'password' => Hash::make($password)
         ]);
+        Auth::set('user', $user);
+        $users = Auth::get('user');
 
-        // $role = 
-        // dd($user);
+        UserRole::create([
+            'role_id' => 1,
+            'user_id' => $users->id
+        ]);
 
+        $userRole = User::with('roles')->findOrFail($users->id);
+        $roleNames = [];
 
+        foreach ($userRole as $role) {
+            $roleNames[] = $role->role_name;
+        }
+        Auth::set('role', $roleNames);
         if ($user) {
             $user = Auth::set('user', $user);
             return redirect('/');

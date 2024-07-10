@@ -123,11 +123,25 @@ abstract class Model
         $stmt = $this->pdo->prepare($sql);
 
         if ($stmt->execute(array_values($attributes))) {
-            return $stmt;
+            // Get the last inserted ID
+            $lastInsertedId = $this->pdo->lastInsertId();
+            $data = $this->findOrFail($lastInsertedId);
+            return $data;
+            // Fetch the newly created record
+            // $sql = "SELECT * FROM {$this->table} WHERE {$this->primaryKey} = ?";
+            // $stmt = $this->pdo->prepare($sql);
+            // $stmt->execute([$lastInsertedId]);
+
+            // // Fetch the result as an object
+            // $stmt->setFetchMode(PDO::FETCH_CLASS, get_class($this));
+            // $newObject = $stmt->fetch();
+
+            // return $newObject;
         } else {
             return false;
         }
     }
+
 
     protected function selectAll()
     {
