@@ -57,4 +57,16 @@ class Auth
         self::start();
         return isset($_SESSION['user']);
     }
+
+
+    public static function user()
+    {
+        return self::get('user');
+    }
+
+    public static function role()
+    {
+        $user = self::user();
+        return isset($user['role']) ? $user['role'] : null;
+    }
 }

@@ -20,7 +20,6 @@ class RedirectIfAuthenticated extends Middleware
             }
         }
 
-
         return $next($request);
     }
 }

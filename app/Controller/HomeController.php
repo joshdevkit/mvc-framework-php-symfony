@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Auth\Auth;
 use App\Framework\Http\Request;
 use App\Models\User;
 use App\Util\Hash;
@@ -11,47 +12,25 @@ class HomeController extends Controller
 {
     public function index()
     {
-        // $users = User::get();
         $devContent = [
             'developer' => 'JoshDev (Joshua Mendoza Pacho)',
-            'tech' => 'Symfony/FashRoute - PHP MVC',
-            'message' => 'Welcome to my Php MVC Project'
+            'tech' => 'Symfony/FastRoute - PHP MVC',
+            'message' => 'Welcome to my PHP MVC Project'
         ];
+        $title = 'Homepage';
 
-        return view('home', ['title' => 'Homepage', 'content' => $devContent]);
+        return view('home', compact('title', 'devContent'));
     }
-
-    public function create()
-    {
-        return view('sample.create');
-    }
-
-    public function store(Request $request)
-    {
-        $name = $request->postParams['name'];
-        $email = $request->postParams['email'];
-        $password = $request->postParams['password'];
-
-        $user = User::create([
-            'name' => $name,
-            'email' => $email,
-            'password' => Hash::make($password),
-        ]);
-
-        if ($user) {
-            return "User created successfully!";
-        }
-    }
-
 
     public function show(Request $request, $id)
     {
+        $title = 'User Details with Params';
         try {
-            $user = User::findOrFail($id);
-            return view('user', ['user' => $user, 'title' => 'User Details with Params']);
+            $user = User::with('info')->findOrFail($id);
+            return view('user', compact('title', 'user'));
         } catch (Exception $e) {
             $errorMessage = $e->getMessage();
-            return view('404', compact('errorMessage'));
+            return view('404', compact('errorMessage', 'title'));
         }
     }
 }

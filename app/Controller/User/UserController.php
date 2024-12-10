@@ -15,9 +15,14 @@ use Exception;
 
 class UserController extends Controller
 {
+   public function dashboard()
+   {
+      $title = 'Admin Dashboard';
+      return view('admin.admin', compact('title'));
+   }
    public function profile()
    {
-      $userID = Auth::get('user')->id;
+      $userID = Auth::user()->id;
       // $user = User::with('info')->findOrFail($userID);
       $user = User::with('info')->findOrFail($userID);
       $title = "Profile Page";
@@ -44,14 +49,17 @@ class UserController extends Controller
    {
       $userId = Auth::get('user')->id;
       $user = User::with('info')->findOrFail($userId);
-      return view('user.update-profile', ['user' => $user, 'title' => 'Update Profile']);
+      $title = 'Update Profile';
+      return view('user.update-profile', compact('user', 'title'));
    }
 
 
    public function update_profile(Request $request)
    {
-      $userId = Auth::get('user')->id;
+      $userId = Auth::user()->id;
       $user = User::findOrFail($userId);
+
+      // Validation rules
       $rules = [
          'address' => 'required',
          'contact' => 'required|max:11|min:11',
@@ -60,61 +68,66 @@ class UserController extends Controller
       $validator = new Validator();
       $input = [
          'address' => $request->input('address'),
-         'contact' => $request->input('contact')
+         'contact' => $request->input('contact'),
       ];
 
-      $profilePicture = $request->file('profilePicture');
-      $storedFilePath = null;
-
-      if ($profilePicture) {
-         $destinationDirectory = '/images/';
-         $storedFilePath = storeAs($profilePicture, $destinationDirectory);
-      }
-
+      // Validate inputs
       if (!$validator->validate($input, $rules)) {
          $errors = $validator->errors();
-         return view('user.update-profile', ['user' => $user, 'input' => $input, 'title' => 'Update Profile', 'errors' => $errors]);
+         return view('user.update-profile', [
+            'user' => $user,
+            'input' => $input,
+            'title' => 'Update Profile',
+            'errors' => $errors,
+         ]);
       }
 
       try {
          $userInfo = UserInfo::where('user_id', '=', $userId)->first();
 
-         if (!$userInfo) {
-            $updated = UserInfo::create([
-               'user_id' => $userId,
-               'contact' => $request->input('contact'),
-               'address' => $request->input('address'),
-               'profile_picture' => $storedFilePath,
-            ]);
-         } else {
-            if ($profilePicture && $userInfo->profile_picture) {
+         // Initialize update data
+         $updateData = [
+            'contact' => $request->input('contact'),
+            'address' => $request->input('address'),
+         ];
+
+         // Handle profile picture upload
+         $profilePicture = $request->file('profilePicture');
+         if ($profilePicture && $profilePicture['name'] !== "") {
+            $destinationDirectory = '/images/';
+            $storedFilePath = storeAs($profilePicture, $destinationDirectory);
+
+            // Remove old profile picture if exists
+            if ($userInfo && $userInfo->profile_picture) {
                unlink(BASE_PATH . '/public' . $userInfo->profile_picture);
             }
 
-            $updateData = [
-               'contact' => $request->input('contact'),
-               'address' => $request->input('address'),
-            ];
-
-            if ($storedFilePath) {
-               $updateData['profile_picture'] = $storedFilePath;
-            }
-
-            $updated = UserInfo::update($updateData, ['user_id' => $userId]);
+            // Update profile picture path
+            $updateData['profile_picture'] = $storedFilePath;
          }
 
-         if ($updated) {
-            Flash::add('success', 'Profile has been Updated');
-            return redirect('/profile', ['user' => $user, 'title' => 'Update Profile']);
+         // Update or create user info
+         if ($userInfo) {
+            UserInfo::update($updateData, ['user_id' => $userId]);
+         } else {
+            $updateData['user_id'] = $userId;
+            UserInfo::create($updateData);
          }
+
+         Flash::add('success', 'Profile has been updated');
+         return redirect('/profile', ['user' => $user, 'title' => 'Update Profile']);
       } catch (SqlExecutionException $e) {
          $errorMessage = $e->getMessage();
          Flash::add('error', $errorMessage);
-         return view('errors.sql-execution-error', ['title' => 'SQLExeception Error', 'errorMessages' => $errorMessage]);
+         return view('errors.sql-execution-error', [
+            'title' => 'SQL Execution Error',
+            'errorMessages' => $errorMessage,
+         ]);
       } catch (Exception $ex) {
          throw $ex;
       }
    }
+
 
 
    public function mail()

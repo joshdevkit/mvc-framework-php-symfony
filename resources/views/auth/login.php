@@ -23,8 +23,10 @@
     }
 
     .form-control:focus {
-        border-color: #007bff;
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        border-color: #6c757d;
+        /* Gray border color */
+        box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.25);
+        /* Gray box shadow */
         background-color: #fff;
     }
 
@@ -41,9 +43,10 @@
     .form-control:focus+label,
     .form-control:not(:placeholder-shown)+label {
         top: -0.5rem;
-        left: 1.5rem;
+        left: 0.2rem;
         font-size: 0.85rem;
-        color: #007bff;
+        color: #6c757d;
+        /* Gray label color on focus */
         background-color: #fff;
         padding: 0 0.25rem;
     }

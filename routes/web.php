@@ -6,7 +6,6 @@ use App\Controller\User\UserController;
 use App\Route\Route;
 
 
-//register auth route like change-password etc
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [UserController::class, 'profile']);
     Route::get('/update-profile', [UserController::class, 'update']);
@@ -14,16 +13,18 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'destroy']);
     Route::get('/user/profile/{name}', [UserController::class, 'showBySlug']);
-    // Route::get('/send-mail', [UserController::class, 'mail']);
 
-    // Route::post('/send-mail', [UserController::class, 'samplemail']);
+
+
+
+    //admin route
+    Route::get('/admin/dashboard', [UserController::class, 'dashboard']);
 });
 
 
 
 
 
-//prevent the auth user to go back from login or register page
 Route::middleware('redirectIfAuthenticated')->group(function () {
     Route::get('/login', [AuthController::class, 'show']);
     Route::get('/register', [AuthController::class, 'register']);
@@ -31,10 +32,9 @@ Route::middleware('redirectIfAuthenticated')->group(function () {
 
 
 
-//register public routes like /about-us, /welcome etc
 Route::get('/', [HomeController::class, 'index']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'create']);
-
+Route::get('/user/{id}', [HomeController::class, 'show']);
 
 return Route::routes();

@@ -50,7 +50,7 @@
                             <div class="card profile-card">
                                 <div class="card-header text-center">
                                     <label for="profilePicture">
-                                        <img style="cursor:pointer;" src="/images/default.webp" alt="Profile Picture" class="rounded-circle profile-img border border-3 border-dark <?= isset($errors['profilePicture']) ? 'is-invalid' : '' ?>" id="profileImgPreview">
+                                        <img style="cursor:pointer;" src="<?= $user->info[0]->profile_picture ?>" alt="Profile Picture" class="rounded-circle profile-img border border-3 border-dark <?= isset($errors['profilePicture']) ? 'is-invalid' : '' ?>" id="profileImgPreview">
                                     </label>
                                     <input type="file" id="profilePicture" name="profilePicture" style="display: none;" accept="image/*" onchange="previewProfilePicture(event)">
                                     <?php

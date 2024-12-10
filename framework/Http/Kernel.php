@@ -53,6 +53,7 @@ class Kernel
             // Handle middleware
             foreach ($middleware as $middlewareAlias) {
                 if (isset($this->routeMiddleware[$middlewareAlias])) {
+                    /** @var MiddlewareInterface $middlewareClass */
                     $middlewareClass = new $this->routeMiddleware[$middlewareAlias]();
                     error_log('Applying middleware: ' . $middlewareAlias);
 

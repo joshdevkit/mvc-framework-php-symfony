@@ -13,7 +13,8 @@ class AuthController extends Controller
 {
     public function show()
     {
-        return view('auth.login', ['title' => 'Login Page']);
+        $title =  'Login Page';
+        return view('auth.login', compact('title'));
     }
 
     public function login(Request $request)
@@ -69,7 +70,6 @@ class AuthController extends Controller
 
     public function create(Request $request)
     {
-        $title = 'Register Page';
         $fullname = $request->input('fullname');
         $email = $request->input('email');
         $password = $request->input('password');
@@ -90,7 +90,7 @@ class AuthController extends Controller
             'confirm_password' => $confirm_password
         ], $rules)) {
             $errors = $validator->errors();
-            return view('auth.register', ['errors' => $errors, 'input' => compact('fullname', 'email', 'password', 'confirm_password', 'title')]);
+            return view('auth.register', ['errors' => $errors, 'title' => 'Register Page', 'input' => compact('fullname', 'email', 'password', 'confirm_password')]);
         }
 
         $user = User::create([

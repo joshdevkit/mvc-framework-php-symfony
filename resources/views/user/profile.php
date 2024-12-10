@@ -8,7 +8,7 @@
             <?php if (empty($user->info[0]->profile_picture)) : ?>
                 <img style="border-radius: 50%;" height="140" width="130" class="border border-2 border-dark" src="/images/default.webp" alt="Profile Picture">
             <?php elseif (!empty($user->info[0]->profile_picture)) : ?>
-                <img style="border-radius: 50%;" height="140" width="130" class="border border-2 border-dark" src="<?= htmlspecialchars($user->info[0]->profile_picture) ?>" alt="Profile Picture">
+                <img style="border-radius: 50%;" height="120" width="120" class="border border-2 border-dark" src="<?= htmlspecialchars($user->info[0]->profile_picture) ?>" alt="Profile Picture">
             <?php endif; ?>
         </div>
     </div>

@@ -86,7 +86,6 @@ abstract class Model
         }
 
         $stmt = $this->pdo->prepare($sql);
-
         foreach ($paramValues as $key => $value) {
             $stmt->bindValue($key + 1, $value);
         }

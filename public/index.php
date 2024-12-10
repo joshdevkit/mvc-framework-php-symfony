@@ -29,16 +29,8 @@ $databaseConfig = [
 ];
 
 $database = new Database($databaseConfig);
-
 $request = Request::createFromGlobals();
-
 $kernel = new Kernel($database);
 
-
-try {
-    $response = $kernel->handle($request);
-    $response->send();
-} catch (\RuntimeException $e) {
-    http_response_code(500);
-    echo "Error: " . $e->getMessage();
-}
+$response = $kernel->handle($request);
+$response->send();

@@ -10,11 +10,14 @@ use Closure;
 
 class Authenticate extends Middleware
 {
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, \Closure $next, ...$params): Response
     {
-
         if (!Auth::check()) {
             return redirect('/login');
+        }
+
+        if (str_starts_with($request->getPathInfo(), '/admin') && !in_array('admin', Auth::get('role'))) {
+            return redirect('/');
         }
 
         return $next($request);

@@ -2,6 +2,7 @@
 
 namespace App\Framework\Http;
 
+
 class Request
 {
     public function __construct(
@@ -56,7 +57,6 @@ class Request
 
     public function all(): array
     {
-        // Sanitize all input values in the request
         $sanitizedInputs = array_map([$this, 'sanitize'], array_merge($this->getParams, $this->postParams));
         return $sanitizedInputs;
     }
@@ -85,4 +85,6 @@ class Request
             return htmlspecialchars($value);
         }
     }
+
+   
 }

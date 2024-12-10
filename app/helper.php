@@ -77,3 +77,11 @@ if (!function_exists('storeAs')) {
         }
     }
 }
+
+
+if (!function_exists('extends')) {
+    function extend($path)
+    {
+        return Helper::extends($path);
+    }
+}

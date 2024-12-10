@@ -24,7 +24,7 @@
                     <li class="nav-item">
                         <a class="btn btn-primary" href="/login">Sign In</a>
                     </li>
-                   
+
                 </ul>
             </div>
         </div>

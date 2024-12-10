@@ -47,10 +47,18 @@ class Helper
     public static function renderError(string $view, array $data = []): string
     {
         $viewPath = str_replace('.', '/', $view);
-        extract($data);
+
         ob_start();
         $errorPath =  BASE_PATH . '/errors/' . "{$viewPath}.php";
         echo $errorPath;
         return ob_get_clean();
+    }
+
+    public static function extends(): string
+    {
+        $template = VIEW_PATH;
+
+
+        return $template;
     }
 }
